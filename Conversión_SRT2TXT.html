@@ -88,24 +88,16 @@
         const content = e.target.result;
         const lines = content.split(/\r?\n/);
         let result = "";
-        let invalidFormat = false;
 
         original.value = content;
 
-        for (let i = 0; i < lines.length; i += 4) {
-          if (i + 3 >= lines.length || lines[i] === '' || lines[i + 1] === '' || lines[i + 2] === '') {
-            invalidFormat = true;
-            break;
+        for (let i = 0; i < lines.length; i++) {
+          if (i % 4 === 2) {
+            result += lines[i] + "\n";
           }
-          result += lines[i + 2] + "\n";
         }
 
-        if (invalidFormat) {
-          alert('El archivo no parece tener el formato correcto de bloques de 4 líneas. Asegúrate de subir un archivo SRT válido.');
-          output.value = '';
-        } else {
-          output.value = result.trim();
-        }
+        output.value = result.trim();
       };
 
       reader.readAsText(file, 'UTF-8');
