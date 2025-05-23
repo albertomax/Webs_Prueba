@@ -37,13 +37,35 @@
     button:hover {
       background: #2c5282;
     }
+    .notice {
+      background: #edf2f7;
+      padding: 10px;
+      border-left: 4px solid #3182ce;
+      margin-bottom: 15px;
+      border-radius: 4px;
+    }
+    .preview-container {
+      margin-top: 15px;
+    }
+    .preview-container textarea {
+      background: #f1f5f9;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Procesador de Texto por Bloques</h2>
-    <input type="file" id="fileInput" accept=".txt" />
+    <div class="notice">
+      Por favor, sube un archivo <strong>SRT</strong> (SubRip Subtitle). La aplicación eliminará el número de bloque, el minutaje y las líneas en blanco. Solo se conservará el texto de cada bloque y se generará un archivo <strong>TXT limpio</strong>.
+    </div>
+    <input type="file" id="fileInput" accept=".txt,.srt" />
     <button onclick="processFile()">Procesar</button>
+
+    <div class="preview-container">
+      <label for="original">Vista previa del archivo original:</label>
+      <textarea id="original" placeholder="Vista previa del archivo original..." readonly></textarea>
+    </div>
+
     <textarea id="output" placeholder="El resultado aparecerá aquí..."></textarea>
     <button onclick="downloadResult()">Descargar resultado</button>
   </div>
@@ -52,9 +74,10 @@
     function processFile() {
       const input = document.getElementById('fileInput');
       const output = document.getElementById('output');
+      const original = document.getElementById('original');
 
       if (!input.files.length) {
-        alert('Por favor, selecciona un archivo .txt');
+        alert('Por favor, selecciona un archivo .srt o .txt');
         return;
       }
 
@@ -62,16 +85,27 @@
       const reader = new FileReader();
 
       reader.onload = function(e) {
-        const lines = e.target.result.split(/\r?\n/);
+        const content = e.target.result;
+        const lines = content.split(/\r?\n/);
         let result = "";
+        let invalidFormat = false;
+
+        original.value = content;
 
         for (let i = 0; i < lines.length; i += 4) {
-          if (i + 2 < lines.length) {
-            result += lines[i + 2] + "\n";
+          if (i + 3 >= lines.length || lines[i] === '' || lines[i + 1] === '' || lines[i + 2] === '') {
+            invalidFormat = true;
+            break;
           }
+          result += lines[i + 2] + "\n";
         }
 
-        output.value = result.trim();
+        if (invalidFormat) {
+          alert('El archivo no parece tener el formato correcto de bloques de 4 líneas. Asegúrate de subir un archivo SRT válido.');
+          output.value = '';
+        } else {
+          output.value = result.trim();
+        }
       };
 
       reader.readAsText(file, 'UTF-8');
@@ -79,6 +113,10 @@
 
     function downloadResult() {
       const text = document.getElementById('output').value;
+      if (!text) {
+        alert('No hay contenido para descargar. Procesa un archivo primero.');
+        return;
+      }
       const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -90,4 +128,3 @@
   </script>
 </body>
 </html>
-
