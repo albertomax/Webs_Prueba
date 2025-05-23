@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Filtrar Texto de Bloques</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1em;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #2b6cb0;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2c5282;
+    }
+    .notice {
+      background: #edf2f7;
+      padding: 10px;
+      border-left: 4px solid #3182ce;
+      margin-bottom: 15px;
+      border-radius: 4px;
+    }
+    .preview-container {
+      margin-top: 15px;
+    }
+    .preview-container textarea {
+      background: #f1f5f9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Procesador de Texto por Bloques</h2>
+    <div class="notice">
+      Por favor, sube un archivo <strong>SRT</strong> (SubRip Subtitle). La aplicación eliminará el número de bloque, el minutaje y las líneas en blanco. Solo se conservará el texto de cada bloque y se generará un archivo <strong>TXT limpio</strong>.
+    </div>
+    <input type="file" id="fileInput" accept=".txt,.srt" />
+    <button onclick="processFile()">Procesar</button>
+
+    <div class="preview-container">
+      <label for="original">Vista previa del archivo original:</label>
+      <textarea id="original" placeholder="Vista previa del archivo original..." readonly></textarea>
+    </div>
+
+    <textarea id="output" placeholder="El resultado aparecerá aquí..."></textarea>
+    <button onclick="downloadResult()">Descargar resultado</button>
+  </div>
+
+  <script>
+    function processFile() {
+      const input = document.getElementById('fileInput');
+      const output = document.getElementById('output');
+      const original = document.getElementById('original');
+
+      if (!input.files.length) {
+        alert('Por favor, selecciona un archivo .srt o .txt');
+        return;
+      }
+
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const content = e.target.result;
+        const lines = content.split(/\r?\n/);
+        let result = "";
+
+        original.value = content;
+
+        for (let i = 0; i < lines.length; i++) {
+          if (i % 4 === 2) {
+            result += lines[i] + "\n";
+          }
+        }
+
+        output.value = result.trim();
+      };
+
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    function downloadResult() {
+      const text = document.getElementById('output').value;
+      if (!text) {
+        alert('No hay contenido para descargar. Procesa un archivo primero.');
+        return;
+      }
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'texto_filtrado.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
