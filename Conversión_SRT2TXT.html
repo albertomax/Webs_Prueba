@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Filtrar Texto de Bloques</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1em;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #2b6cb0;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2c5282;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Procesador de Texto por Bloques</h2>
+    <input type="file" id="fileInput" accept=".txt" />
+    <button onclick="processFile()">Procesar</button>
+    <textarea id="output" placeholder="El resultado aparecerá aquí..."></textarea>
+    <button onclick="downloadResult()">Descargar resultado</button>
+  </div>
+
+  <script>
+    function processFile() {
+      const input = document.getElementById('fileInput');
+      const output = document.getElementById('output');
+
+      if (!input.files.length) {
+        alert('Por favor, selecciona un archivo .txt');
+        return;
+      }
+
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const lines = e.target.result.split(/\r?\n/);
+        let result = "";
+
+        for (let i = 0; i < lines.length; i += 4) {
+          if (i + 2 < lines.length) {
+            result += lines[i + 2] + "\n";
+          }
+        }
+
+        output.value = result.trim();
+      };
+
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    function downloadResult() {
+      const text = document.getElementById('output').value;
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'texto_filtrado.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
+
